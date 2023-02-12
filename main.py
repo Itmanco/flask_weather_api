@@ -1,12 +1,16 @@
+import pandas
 from flask import Flask, render_template
 import pandas as pd
 
 app = Flask(__name__)
 
 
+stations = pd.read_csv("data_small/stations.txt", skiprows=17)
+stations = stations[["STAID", "STANAME                                 "]]
+
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("home.html", data=stations.to_html())
 
 
 @app.route("/api/v1/<station>/<date>")
@@ -23,8 +27,9 @@ def weather(station, date):
 
 @app.route("/api/v1/<subject>")
 def dictionary(subject):
-    local_value = str(subject).upper()
-    return {"definition": local_value,
+    df = pandas.read_csv("dictionary.csv")
+    definition = df.loc[df["word"] == subject]["definition"].squeeze()
+    return {"definition": definition,
             "word": subject}
 
 if __name__ == "__main__":
